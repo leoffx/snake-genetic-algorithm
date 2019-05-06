@@ -1,1 +1,1 @@
-Simple genetic algorithm applied to a Snake game.
+Simple genetic algorithm applied to Snake game.
