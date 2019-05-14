@@ -64,13 +64,9 @@ class snake():
         return self.mov_x, self.mov_y
 
     def mutate(self, weights):
-        weights = [((matrix * (1 + .05 * np.random.uniform(low=-1.,high=1., size=matrix.shape))) )for matrix for weight in weights]
-        self.model.set_weights( weights)
+        weights = [((weight * (1 + .05 * np.random.uniform(low=-1.,high=1., size=weight.shape)))) for weight in weights]
+        self.model.set_weights(weights)
 
-    def kill_loser(self):
-        self.mov_x = 0
-        self.mov_y = 0
-        self.vel = 0
 
 
 class create_food():
