@@ -3,7 +3,7 @@ import random
 from nn import *
 import matplotlib.pyplot as plt
 import numpy as np
-from keras.models import load_model, save_model
+#from keras.models import load_model, save_model
 pg.init()
 
 res_x = 400
@@ -50,7 +50,7 @@ while run:
 
     for event in pg.event.get():  #checa se clicou fechar
         if event.type == pg.QUIT:
-            winner.model.save_weights('winner.h5')
+            #winner.model.save_weights('winner.h5')
             run = False
 
     for cobra in cobras:
@@ -94,10 +94,12 @@ while run:
             cobras.remove(cobra)
 
             if (cobras == []):
-                print(winner.model.get_weights())
+                #print(winner.model.get_weights())
                 food = create_food(res_x, res_y)
-                weights = winner.model.get_weights()
+                #weights = winner.model.get_weights()
+                weights = winner.params
                 cobras = [snake() for _ in range(20)]
                 for cobra in cobras:
                     cobra.mutate(weights)
+                winner = 0
 pg.quit()
