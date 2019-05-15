@@ -71,7 +71,7 @@ class snake():
                         (4, 1)) / 400
 
         move = self.model_predict(X0)
-        move = np.argmax(move)
+        move = np.random.choice(4, 1, p=move[:, 0])
 
         if keys[pg.K_p]:
             self.mov_x = 0
@@ -97,9 +97,8 @@ class snake():
 
     def mutate(self, weights):
         for weight in weights:
-            self.params[weight] = weights[weight] * (
-                1 + .05 * np.random.uniform(
-                    low=-1., high=1., size=self.params[weight].shape))
+            self.params[weight] = weights[weight] * (1 + np.random.uniform(
+                low=-.15, high=.15, size=self.params[weight].shape))
         """weights = [((weight * (
             1 + .30 * np.random.uniform(low=-1., high=1., size=weight.shape))))
                    for weight in weights]"""
