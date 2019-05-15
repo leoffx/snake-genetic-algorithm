@@ -41,7 +41,7 @@ food = create_food(res_x, res_y)
 pop = True
 run = True
 lose = False
-being_alive_score = .01
+being_alive_score = .001
 winner = 0
 
 while run:
@@ -86,20 +86,24 @@ while run:
         cobra.head_x += cobra.mov_x
         cobra.head_y += cobra.mov_y
         if check_lose(res_x, res_y, cobra):
-            if not winner:
-                winner = cobra
-            elif cobra.score >= winner.score:
-                print(cobra.score)
-                winner = cobra
+            if cobra.score > 0:
+                if not winner:
+                    winner = cobra
+                elif cobra.score >= winner.score:
+                    print(cobra.score)
+                    winner = cobra
             cobras.remove(cobra)
 
             if (cobras == []):
                 #print(winner.model.get_weights())
                 food = create_food(res_x, res_y)
                 #weights = winner.model.get_weights()
-                weights = winner.params
-                cobras = [snake() for _ in range(20)]
-                for cobra in cobras:
-                    cobra.mutate(weights)
-                winner = 0
+
+                if (winner):
+                    print('foi!')
+                    weights = winner.params
+                    for cobra in cobras:
+                        cobra.mutate(weights)
+                cobras = [snake() for _ in range(200)]
+                #winner = 0
 pg.quit()
