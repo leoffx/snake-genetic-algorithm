@@ -97,16 +97,13 @@ class snake():
 
     def mutate(self, weights):
         for weight in weights:
-            print(self.params[weight].shape)
-            self.params[weight] = self.params[weight] * (
+            self.params[weight] = weights[weight] * (
                 1 + .05 * np.random.uniform(
                     low=-1., high=1., size=self.params[weight].shape))
         """weights = [((weight * (
             1 + .30 * np.random.uniform(low=-1., high=1., size=weight.shape))))
                    for weight in weights]"""
         #self.model.set_weights( weights)
-
-
 
 
 class create_food():
