@@ -3,11 +3,10 @@ import random
 from nn import *
 import matplotlib.pyplot as plt
 import numpy as np
-#from keras.models import load_model, save_model
 pg.init()
 
-res_x = 400
-res_y = 400
+res_x = 600
+res_y = 600
 
 win = pg.display.set_mode([res_x, res_y])
 
@@ -41,15 +40,21 @@ pop = True
 run = True
 lose = False
 being_alive_score = 0
-winner = 0
+best_score = 1
+best_winners = []
+
+try:
+    winners = np.load('winners.npy').tolist()
+except FileNotFoundError:
+    winners = []
 
 while run:
-    pg.time.delay(50)  #game refresh
+    #pg.time.delay(10)  #game refresh
     win.fill((0, 0, 0))  #preenche display
 
     for event in pg.event.get():  #checa se clicou fechar
         if event.type == pg.QUIT:
-            #winner.model.save_weights('winner.h5')
+            np.save('winners.npy', winners)
             run = False
 
     pg.draw.rect(win, (255, 0, 0),
@@ -58,9 +63,10 @@ while run:
         cobra.score += being_alive_score
         if (food.x == cobra.head_x) and (
                 food.y == cobra.head_y):  #acertou a cabeça na comida
-            cobra.score += 2.
-            food.x = (10 * np.random.randint(0, (res_x - 10) / 10))
-            food.y = (10 * np.random.randint(0, (res_y - 10) / 10))
+            cobra.score += 1.
+            food = create_food(res_x, res_y)
+            """food.x = (10 * np.random.randint(0, (res_x - 10) / 10))
+            food.y = (10 * np.random.randint(0, (res_y - 10) / 10))"""
             """while [food.x, food.y
                    ] in cobra.body:  #nao deixa a comida nascer dentro do corpo
                 food.x = (10 * np.random.randint(0, (res_x - 10) / 10))
@@ -77,28 +83,44 @@ while run:
         ])  #em t+1 passa o ultimo pixel pro lugar da cabeça em t
 
         cobra.mov_x, cobra.mov_y = cobra.movimento(food)
-
         cobra.head_x += cobra.mov_x
         cobra.head_y += cobra.mov_y
-        if check_lose(res_x, res_y, cobra):
-            if cobra.score > 0:
-                if not winner:
-                    winner = cobra
-                elif cobra.score >= winner.score:
-                    print(cobra.score)
-                    winner = cobra
+
+        if (food.lifespan >= 400) or check_lose(res_x, res_y, cobra):
+            if cobra.score > best_score:  #check if snake is better than others
+                winners.append(cobra)
+                best_winners.append(
+                    cobra
+                )  #reserve snake for a new population when it reaches a threshold
+                print(len(best_winners))
+                if len(best_winners) >= 3:  #arbitrary number
+                    winners = best_winners
+                    best_score = cobra.score
+                    best_winners = []
+            elif cobra.score == best_score:  #check if snake reaches current score threshold
+                for winner in winners:
+                    if (np.array_equal(cobra.params['W1'], winner.params['W1'])
+                        ):  #check if this snake is already in the winner list
+                        break
+                else:
+                    winners.append(cobra)
             cobras.remove(cobra)
 
+    food.lifespan += 1  #increases current acceptable idle time for snakes
     pg.display.update()
     if (cobras == []):
-        food = create_food(res_x, res_y)
+        food.lifespan = 0
+        cobras = [snake() for _ in range(populationNum + len(winners))
+                  ]  #create new population with slots for the winners
+        print(len(cobras))
+        if (winners):  #breeding
+            for i in range(len(winners)):
+                child_num = int(populationNum / len(winners))
+                weights = winners[i].params
+                for cobra in cobras[i * child_num:(
+                        i + 1) * child_num]:  #mutate the children of winners
+                    cobra.mutate(weights)
+                cobras[populationNum +
+                       i].params = weights  #add winners to the new population
 
-        cobras = [snake() for _ in range(populationNum)]
-        if (winner):
-            weights = winner.params
-            print(weights['W1'])
-            for cobra in cobras[:450]:
-                cobra.mutate(weights)
-
-        #winner = 0
 pg.quit()
