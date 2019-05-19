@@ -1,17 +1,14 @@
-#import keras as K
-#from keras.layers import Dense, Input, Flatten
-#from keras.models import Model
 import pygame as pg
 import numpy as np
 
 
 class snake():
-    def __init__(self, size=3, create_brain=False):
+    def __init__(self, size=3):
         self.heigth = 10
         self.width = 10
         self.vel = 10
-        self.head_x = 40
-        self.head_y = 150
+        self.head_x = 300
+        self.head_y = 300
         self.score = 0
         self.initial_size = size
         self.body = []
@@ -23,10 +20,10 @@ class snake():
 
     def init_params(self):
         #initialization
-        W1 = np.random.uniform(low=-.1, high=.1, size=(3, 4))
-        b1 = np.random.uniform(low=-.1, high=.1, size=(3, 1))
+        W1 = np.random.uniform(low=-.1, high=.1, size=(16, 6))
+        b1 = np.random.uniform(low=-.1, high=.1, size=(16, 1))
 
-        W2 = np.random.uniform(low=-.1, high=.1, size=(4, 3))
+        W2 = np.random.uniform(low=-.1, high=.1, size=(4, 16))
         b2 = np.random.uniform(low=-.1, high=.1, size=(4, 1))
 
         params = {
@@ -42,12 +39,12 @@ class snake():
         #first layer
         X = np.dot(self.params["W1"], X0)
         X = np.add(X, self.params["b1"])
-        X = np.tanh(X)  #tanh
+        X = np.tanh(X)  #activation
 
         #final layer
         X = np.dot(self.params["W2"], X)
         X = np.add(X, self.params["b2"])
-        X = np.exp(10 * X) / np.sum(np.exp(10 * X))  #softmax
+        X = np.exp(100 * X) / np.sum(np.exp(100 * X))  #softmax
 
         return X
 
@@ -57,9 +54,9 @@ class snake():
         return imageArray"""
 
     def movimento(self, food):
-
-        X0 = np.reshape([[self.head_x], [food.x], [self.head_y], [food.y]],
-                        (4, 1)) / 200  #, [food.x], [food.y]],(4, 1)) / 400
+        X0 = np.reshape([[self.head_x], [food.x], [self.head_y], [food.y],
+                         [self.head_x - food.x], [self.head_y - food.y]],
+                        (6, 1)) / 600  #, [food.x], [food.y]],(4, 1)) / 400
 
         move = self.model_predict(X0)
         move = np.random.choice(4, 1, p=move[:, 0])
@@ -85,8 +82,9 @@ class snake():
 
     def mutate(self, weights):
         for weight in weights:
-            self.params[weight] = weights[weight] + .1 * (np.random.uniform(
-                low=-1., high=1., size=self.params[weight].shape))
+            self.params[weight] = weights[weight] + np.random.normal(
+                scale=.1, size=self.params[weight].shape)
+            #(np.random.uniform(low=-1., high=1., size=self.params[weight].shape))
 
 
 class create_food():
@@ -95,3 +93,4 @@ class create_food():
         self.width = 10
         self.x = (10 * np.random.randint(0, (res_x - 10) / 10))
         self.y = (10 * np.random.randint(0, (res_y - 10) / 10))
+        self.lifespan = 0
