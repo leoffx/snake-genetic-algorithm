@@ -20,11 +20,11 @@ class snake():
 
     def init_params(self):
         #initialization
-        W1 = np.random.uniform(low=-.1, high=.1, size=(16, 6))
-        b1 = np.random.uniform(low=-.1, high=.1, size=(16, 1))
+        W1 = np.random.uniform(low=-1, high=1, size=(16, 6))
+        b1 = np.random.uniform(low=-1, high=1, size=(16, 1))
 
-        W2 = np.random.uniform(low=-.1, high=.1, size=(4, 16))
-        b2 = np.random.uniform(low=-.1, high=.1, size=(4, 1))
+        W2 = np.random.uniform(low=-1, high=1, size=(4, 16))
+        b2 = np.random.uniform(low=-1, high=1, size=(4, 1))
 
         params = {
             "W1": W1,
@@ -44,7 +44,7 @@ class snake():
         #final layer
         X = np.dot(self.params["W2"], X)
         X = np.add(X, self.params["b2"])
-        X = np.exp(100 * X) / np.sum(np.exp(100 * X))  #softmax
+        X = np.exp(10 * X) / np.sum(np.exp(10 * X))  #softmax
 
         return X
 
@@ -84,7 +84,6 @@ class snake():
         for weight in weights:
             self.params[weight] = weights[weight] + np.random.normal(
                 scale=.1, size=self.params[weight].shape)
-            #(np.random.uniform(low=-1., high=1., size=self.params[weight].shape))
 
 
 class create_food():
