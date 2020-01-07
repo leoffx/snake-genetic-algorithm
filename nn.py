@@ -20,11 +20,11 @@ class snake():
 
     def init_params(self):
         #initialization
-        W1 = np.random.uniform(low=-1, high=1, size=(16, 6))
-        b1 = np.random.uniform(low=-1, high=1, size=(16, 1))
+        W1 = np.random.normal(size=(16, 6))/np.sqrt(16)
+        b1 = np.zeros((16, 1))
 
-        W2 = np.random.uniform(low=-1, high=1, size=(4, 16))
-        b2 = np.random.uniform(low=-1, high=1, size=(4, 1))
+        W2 = np.random.normal(size=(4, 16))/np.sqrt(4)
+        b2 = np.zeros((4, 1))
 
         params = {
             "W1": W1,
