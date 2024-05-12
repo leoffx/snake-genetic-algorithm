@@ -1,8 +1,18 @@
-import pygame as pg
 import numpy as np
 
 
-class snake():
+class Snake:
+    heigth: int
+    width: int
+    vel: int
+    head_x: int
+    head_y: int
+    score: int
+    initial_size: int
+    body: list
+    mov_x: int
+    mov_y: int
+
     def __init__(self, size=3):
         self.heigth = 10
         self.width = 10
@@ -19,11 +29,10 @@ class snake():
         self.params = self.init_params()
 
     def init_params(self):
-        #initialization
-        W1 = np.random.normal(size=(16, 6))/np.sqrt(16)
+        W1 = np.random.normal(size=(16, 6)) / np.sqrt(16)
         b1 = np.zeros((16, 1))
 
-        W2 = np.random.normal(size=(4, 16))/np.sqrt(4)
+        W2 = np.random.normal(size=(4, 16)) / np.sqrt(4)
         b2 = np.zeros((4, 1))
 
         params = {
@@ -36,27 +45,31 @@ class snake():
         return params
 
     def model_predict(self, X0):
-        #first layer
         X = np.dot(self.params["W1"], X0)
         X = np.add(X, self.params["b1"])
-        X = np.tanh(X)  #activation
+        X = np.tanh(X)
 
-        #final layer
         X = np.dot(self.params["W2"], X)
         X = np.add(X, self.params["b2"])
-        X = np.exp(10 * X) / np.sum(np.exp(10 * X))  #softmax
+        X = np.exp(10 * X) / np.sum(np.exp(10 * X))
 
         return X
 
-    """def get_screen(self): #para fazer a versão com imagem
-        gameState = pg.display.get_surface()
-        imageArray = pg.surfarray.array2d(gameState)
-        return imageArray"""
-
-    def movimento(self, food):
-        X0 = np.reshape([[self.head_x], [food.x], [self.head_y], [food.y],
-                         [self.head_x - food.x], [self.head_y - food.y]],
-                        (6, 1)) / 600  #, [food.x], [food.y]],(4, 1)) / 400
+    def choose_move(self, food):
+        X0 = (
+            np.reshape(
+                [
+                    [self.head_x],
+                    [food.x],
+                    [self.head_y],
+                    [food.y],
+                    [self.head_x - food.x],
+                    [self.head_y - food.y],
+                ],
+                (6, 1),
+            )
+            / 600
+        )
 
         move = self.model_predict(X0)
         move = np.random.choice(4, 1, p=move[:, 0])
@@ -83,13 +96,23 @@ class snake():
     def mutate(self, weights):
         for weight in weights:
             self.params[weight] = weights[weight] + np.random.normal(
-                scale=.1, size=self.params[weight].shape)
+                scale=0.1, size=self.params[weight].shape
+            )
+
+    def create_children(self, child_num) -> list["Snake"]:
+        w = self.params
+        children = []
+        for i in range(child_num):
+            child = Snake()
+            child.mutate(w)
+            children.append(child)
+        return children
 
 
-class create_food():
+class Food:
     def __init__(self, res_x, res_y):
         self.heigth = 10
         self.width = 10
-        self.x = (10 * np.random.randint(0, (res_x - 10) / 10))
-        self.y = (10 * np.random.randint(0, (res_y - 10) / 10))
+        self.x = 10 * np.random.randint(0, (res_x - 10) / 10)
+        self.y = 10 * np.random.randint(0, (res_y - 10) / 10)
         self.lifespan = 0
