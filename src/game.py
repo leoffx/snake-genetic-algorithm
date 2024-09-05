@@ -1,7 +1,8 @@
 import pickle
-from src.configs import POPULATION, SCREEN_SIZE, SNAKE_MAX_HUNGER_TICKS, SNAKE_SIZE
+from src.configs import POPULATION, SCREEN_SIZE, FOOD_SPOIL_TICKS, SNAKE_SIZE
 from src.objects import Snake, Food
-from src.renderer import PyGameRenderer, Renderer, VoidRenderer
+from src.renderers.protocol import Renderer
+from src.renderers.pygame import PyGameRenderer
 
 
 class Game:
@@ -22,25 +23,25 @@ class Game:
         while True:
             try:
                 self.game_loop()
-            except StopIteration:
+            except (StopIteration, KeyboardInterrupt):
                 break
         self.store_winners()
         self.renderer.quit()
 
     def check_lose(self, snake: Snake):
-        return (
+        food_spoiled = self.food.lifespan >= FOOD_SPOIL_TICKS
+        snake_died = (
             0 > snake.head_x
             or snake.head_x > (SCREEN_SIZE - SNAKE_SIZE)
             or 0 > snake.head_y
             or snake.head_y > (SCREEN_SIZE - SNAKE_SIZE)
         )
+        return food_spoiled or snake_died
 
     def reset_game(self):
         self.snakes = [Snake() for _ in range(POPULATION)]
         self.food = Food(SCREEN_SIZE, SCREEN_SIZE)
 
-        if not self.winners:
-            return
         for winner in self.winners:
             self.snakes.extend(winner.create_children(10))
 
@@ -58,8 +59,9 @@ class Game:
         snake.head_x += snake.mov_x
         snake.head_y += snake.mov_y
 
-        if self.food.lifespan >= SNAKE_MAX_HUNGER_TICKS or self.check_lose(snake):
+        if self.check_lose(snake):
             if snake.score > self.best_score:
+                print("Best Score:", self.best_score)
                 self.winners = [snake]
                 self.best_score = snake.score
             self.snakes.remove(snake)
@@ -81,5 +83,6 @@ class Game:
         try:
             with open("winners.pkl", "rb") as f:
                 self.winners = pickle.load(f)
+                self.best_score = self.winners[0].score if self.winners else 1
         except Exception:
             self.winners = []
