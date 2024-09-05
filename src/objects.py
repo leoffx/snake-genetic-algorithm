@@ -1,9 +1,9 @@
 import numpy as np
 
+from src.configs import SCREEN_SIZE, SNAKE_INITIAL_SIZE
+
 
 class Snake:
-    heigth: int
-    width: int
     vel: int
     head_x: int
     head_y: int
@@ -13,20 +13,17 @@ class Snake:
     mov_x: int
     mov_y: int
 
-    def __init__(self, size=3):
-        self.heigth = 10
-        self.width = 10
+    def __init__(self):
         self.vel = 10
         self.head_x = 300
         self.head_y = 300
         self.score = 0
-        self.initial_size = size
         self.body = []
         self.mov_x = self.vel
         self.mov_y = 0
-        for _ in range(self.initial_size):
+        for _ in range(SNAKE_INITIAL_SIZE):
             self.body.append([self.head_x - 10, self.head_y])
-        self.params = self.init_params()
+        self.init_params()
 
     def init_params(self):
         W1 = np.random.normal(size=(16, 6)) / np.sqrt(16)
@@ -35,14 +32,12 @@ class Snake:
         W2 = np.random.normal(size=(4, 16)) / np.sqrt(4)
         b2 = np.zeros((4, 1))
 
-        params = {
+        self.params = {
             "W1": W1,
             "b1": b1,
             "W2": W2,
             "b2": b2,
         }
-
-        return params
 
     def model_predict(self, X0):
         X = np.dot(self.params["W1"], X0)
@@ -68,7 +63,7 @@ class Snake:
                 ],
                 (6, 1),
             )
-            / 600
+            / SCREEN_SIZE
         )
 
         move = self.model_predict(X0)
@@ -111,8 +106,6 @@ class Snake:
 
 class Food:
     def __init__(self, res_x, res_y):
-        self.heigth = 10
-        self.width = 10
         self.x = 10 * np.random.randint(0, (res_x - 10) / 10)
         self.y = 10 * np.random.randint(0, (res_y - 10) / 10)
         self.lifespan = 0
