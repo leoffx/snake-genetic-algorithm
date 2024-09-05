@@ -2,7 +2,6 @@ import pickle
 from src.configs import POPULATION, SCREEN_SIZE, FOOD_SPOIL_TICKS, SNAKE_SIZE
 from src.objects import Snake, Food
 from src.renderers.protocol import Renderer
-from src.renderers.pygame import PyGameRenderer
 
 
 class Game:
@@ -13,10 +12,10 @@ class Game:
     best_score = 1
     winners: list[Snake] = []
 
-    def __init__(self):
+    def __init__(self, renderer: Renderer):
         self.snakes = [Snake() for _ in range(POPULATION)]
         self.food = Food(SCREEN_SIZE, SCREEN_SIZE)
-        self.renderer = PyGameRenderer()
+        self.renderer = renderer
 
     def main(self):
         self.load_winners()
@@ -27,6 +26,15 @@ class Game:
                 break
         self.store_winners()
         self.renderer.quit()
+
+    def game_loop(self):
+        for snake in self.snakes:
+            self.update_snake(snake)
+        self.renderer.draw_scene(snakes=self.snakes, food=self.food)
+        self.food.lifespan += 1
+
+        if self.snakes == []:
+            self.reset_game()
 
     def check_lose(self, snake: Snake):
         food_spoiled = self.food.lifespan >= FOOD_SPOIL_TICKS
@@ -65,15 +73,6 @@ class Game:
                 self.winners = [snake]
                 self.best_score = snake.score
             self.snakes.remove(snake)
-
-    def game_loop(self):
-        for snake in self.snakes:
-            self.update_snake(snake)
-        self.renderer.draw_scene(snakes=self.snakes, food=self.food)
-        self.food.lifespan += 1
-
-        if self.snakes == []:
-            self.reset_game()
 
     def store_winners(self):
         with open("winners.pkl", "w+b") as f:
